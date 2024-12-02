@@ -1,0 +1,15 @@
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\bin\Debug\net7.0\BankingApp.exe
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\bin\Debug\net7.0\BankingApp.deps.json
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\bin\Debug\net7.0\BankingApp.runtimeconfig.json
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\bin\Debug\net7.0\BankingApp.dll
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\bin\Debug\net7.0\BankingApp.pdb
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\obj\Debug\net7.0\BankingApp.csproj.AssemblyReference.cache
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\obj\Debug\net7.0\BankingApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\obj\Debug\net7.0\BankingApp.AssemblyInfoInputs.cache
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\obj\Debug\net7.0\BankingApp.AssemblyInfo.cs
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\obj\Debug\net7.0\BankingApp.csproj.CoreCompileInputs.cache
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\obj\Debug\net7.0\BankingApp.dll
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\obj\Debug\net7.0\refint\BankingApp.dll
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\obj\Debug\net7.0\BankingApp.pdb
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\obj\Debug\net7.0\BankingApp.genruntimeconfig.cache
+C:\Users\cargoerp\Documents\Personal\Corsiva Lab\BankingApp\obj\Debug\net7.0\ref\BankingApp.dll
