@@ -1,5 +1,5 @@
 ## Overview
-This repository contains the solution for the practical test. It is implemented as a C# console application that fulfills the following requirements:
+This repository contains the solution for the practical case study. It is implemented as a C# console application that fulfills the following requirements:
 - **Input Transactions**: Allows users to input transactions with details like date, account, type (deposit/withdrawal), and amount.
 - **Define Interest Rates**: Supports defining interest rate rules with effective dates and rates.
 - **Print Account Statement**: Displays account statements, calculates pro-rated interest rates.
@@ -15,7 +15,7 @@ This repository contains the solution for the practical test. It is implemented 
      ```
      Example:
      ```
-     01062024|AC001|D|1000.00
+     14102024|AC001|D|200.00
      ```
    - Automatically creates an account if it does not exist.
    - Displays transactions for the account, ordered by date.
@@ -33,7 +33,7 @@ This repository contains the solution for the practical test. It is implemented 
      ```
      Example:
      ```
-     15062024|RULE02|2.20
+     01012024|RULE01|1.95
      ```
    - Displays the list of defined rates, ordered by their effective date.
    - **Validation**:
@@ -44,6 +44,7 @@ This repository contains the solution for the practical test. It is implemented 
          ```
          - If `Y`, the rule input will be updated to the existing Rule ID.
          - If `N`, the user is asked to reenter the Rule ID.
+         - If enter a blank line, the user is able to reenter the interest rate rule.
 
 3. **Print Account Statement**:
    - Prompts for the account and month:
@@ -52,7 +53,7 @@ This repository contains the solution for the practical test. It is implemented 
      ```
      Example:
      ```
-     AC001|0624
+     AC001|0924
      ```
    - Displays the account statement, calculates daily interest, and includes it as a transaction at the end of the month.
 
@@ -77,7 +78,7 @@ This repository contains the solution for the practical test. It is implemented 
        Rule ID is not unique. Do you want to update the existing rule? (Y/N)
        ```
        - If the user selects **Y**, the rule for the existing Rule ID is updated.
-       - If the user selects **N**, the user is asked to reenter the Rule ID.
+       - If the user selects **N**, the user is asked to reenter the Rule ID and new rule will be added.
 
 3. **Input Validation**:
    - Ensures that all inputs (e.g., date, type, amount) follow the correct format.
