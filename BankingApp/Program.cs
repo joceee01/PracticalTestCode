@@ -45,13 +45,15 @@ class Program
 
     static void InputTransactions()
     {
-        Console.WriteLine("\nEnter transactions (Date|Account|Type|Amount). Enter a blank line to finish:");
+        Console.WriteLine("\nFormat: Date|Account|Type|Amount. Enter a blank line to finish");
         Console.WriteLine("Date: DDMMYYYY format");
         Console.WriteLine("Type: Withdrawal (W) or Deposit (D)");
         Console.WriteLine("Amount: Transaction amount");
 
         while (true)
         {
+            Console.WriteLine("\nEnter Transaction:");
+            
             string input = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(input)) 
                 break;
@@ -64,6 +66,9 @@ class Program
                 string account = parts[1];
                 string type = parts[2].ToUpper();               // Set type input to uppercase
                 decimal amount = decimal.Parse(parts[3]);       // Set amount to decimal data type
+                decimal balance = transactions
+                    .Where(t => t.Account == account && t.Date <= date)
+                    .Sum(t => t.Type == "D" ? t.Amount : -t.Amount);
 
                 if (type != "D" && type != "W")
                 {
@@ -71,13 +76,10 @@ class Program
                     continue;
                 }
 
-                decimal balance = transactions
-                    .Where(t => t.Account == account && t.Date <= date)
-                    .Sum(t => t.Type == "D" ? t.Amount : -t.Amount);
-
-                if (type == "W" && balance <= 0)
+                if (type == "W" && (balance - amount) < 0)
                 {
-                    Console.WriteLine("\nAmount not enough for withdrawal.");
+                    Console.WriteLine("\nInsufficient balance for withdrawal.");
+                    continue;
                 }
 
                 else
@@ -102,10 +104,10 @@ class Program
                     {
                         Console.WriteLine($"{t.Date,-14:dd-MM-yyyy}{t.Id,-10}{t.Type,-10}{t.Amount,-10:F2}");
                     }
-                    
+
+                    continue;
                 }
                 
-                Console.WriteLine("\nEnter transactions (Date|Account|Type|Amount). Enter a blank line to finish:");
             }
             catch
             {
@@ -116,13 +118,18 @@ class Program
 
     static void DefineInterestRate()
     {
-        Console.WriteLine("\nEnter interest rate rules (Date|RuleId|Rate in %). Enter a blank line to finish:");
-        Console.WriteLine("Date: DDMMYYYY format");
+        Console.WriteLine("\nFormat: Date|RuleId|Rate. Enter a blank line to finish");
+        Console.WriteLine("Date: the date the interest rule goes into effect, DDMMYYYY format");
+        Console.WriteLine("RuleId: unique name");
+        Console.WriteLine("Rate: decimal number in %");
 
         while (true)
         {
+            Console.WriteLine("\nEnter Interest Rate Rules:");
+
             string input = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(input)) break;
+            if (string.IsNullOrWhiteSpace(input)) 
+                break;
 
             try
             {
@@ -137,56 +144,55 @@ class Program
 
                 if (checkRuleId != null)
                 {
-                    while (true)
+                    Console.WriteLine($"\nRule ID {ruleId} is not unique. Do you want to update the existing rule? (Y/N). Enter blank line to restart.");
+                    Console.WriteLine($"Update existing {ruleId} (Y) or Re-enter Rule Id (N)");
+
+                    while (true) 
                     {
-                        Console.WriteLine("\nDuplicate Rule Id");
-                        Console.WriteLine("Do you wish to update Interest Rate? Enter a blank line to restart:");
-                        Console.WriteLine("Update Interest Rate (Y) or Re-enter Rule Id (N)");
+                        Console.WriteLine("\nEnter Y or N:");
 
-                        string invalidIdinput = Console.ReadLine();
-                        if (string.IsNullOrWhiteSpace(invalidIdinput)) break;
+                        string invalidIdinput = Console.ReadLine().ToUpper();
+                        if (string.IsNullOrWhiteSpace(invalidIdinput))
+                            break;
 
-                        if (invalidIdinput.ToUpper() != "Y" && invalidIdinput.ToUpper() != "N")
+                        if (invalidIdinput != "Y" && invalidIdinput != "N")
                         {
-                            Console.WriteLine("Invalid input.");
+                            Console.WriteLine($"Invalid input. Use 'Y' to update existing {ruleId} or 'N' re-enter Rule Id.");
                             continue;
                         }
 
                         else
                         {
-                            if (invalidIdinput.ToUpper() == "Y")
+                            if (invalidIdinput == "Y")
                             {
-                                Console.WriteLine("Enter new Interest Rate:");
-                                string newIRInput = Console.ReadLine();
-                                rate = decimal.Parse(newIRInput);
-
                                 var findRuleId = interestRateRules
                                     .Where(i => i.RuleId == ruleId)
                                     .FirstOrDefault();
 
                                 // Update interest rate
+                                findRuleId.EffectiveDate = date;
                                 findRuleId.Rate = rate;
+                                Console.WriteLine($"\n{ruleId} update successfully");
                                 break;
                             }
-                            else if (invalidIdinput.ToUpper() == "N")
+                            else if (invalidIdinput == "N")
                             {
-                                Console.WriteLine("Re-enter Rule Id:");
-                                string newIdInput = Console.ReadLine();
-                                ruleId = newIdInput.ToUpper();
+                                Console.WriteLine("\nRe-enter Rule Id:");
+                                string newRuleId = Console.ReadLine().ToUpper();
 
                                 // Add new interest rate rule with newly entered Rule Id
                                 var rule = new InterestRateRule
                                 {
                                     EffectiveDate = date,
-                                    RuleId = ruleId,
+                                    RuleId = newRuleId,
                                     Rate = rate
                                 };
                                 interestRateRules.Add(rule);
+                                Console.WriteLine($"\n{newRuleId} added successfully");
                                 break;
                             }
                         }
                     }
-                    
                 }
 
                 else
@@ -208,7 +214,8 @@ class Program
                 {
                     Console.WriteLine($"{r.RuleId,-10}{r.EffectiveDate,-18:dd-MM-yyyy}{r.Rate,-10:F2}");
                 }
-                Console.WriteLine("\nEnter interest rate rules (Date|RuleId|Rate in %). Enter a blank line to finish:");
+
+                continue;
             }
             catch
             {
@@ -219,60 +226,70 @@ class Program
 
     static void PrintAccountStatement()
     {
-        Console.WriteLine("\nEnter account and month (Account|Month):");
-        Console.WriteLine("Date: MMYY format");
-        string input = Console.ReadLine();
-        try
+        Console.WriteLine("\nFormat: Account|Month. Enter a blank line to finish");
+        Console.WriteLine("Month: MMYY format");
+
+        while (true)
         {
-            var parts = input.Split('|');
-            string account = parts[0];
-            string month = parts[1];
+            Console.WriteLine("\nEnter Account and Month:");
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input))
+                break;
 
-            var statementMonth = DateTime.ParseExact("01" + month, "ddMMyy", CultureInfo.InvariantCulture);
-            var statementTransactions = transactions
-                .Where(t => t.Account == account && t.Date.Year == statementMonth.Year && t.Date.Month == statementMonth.Month)
-                .OrderBy(t => t.Date)
-                .ThenBy(t => t.Id)
-                .ToList();
-
-            if (!statementTransactions.Any())
+            try
             {
-                Console.WriteLine("No transactions found for the specified account and month.");
-                return;
+                var parts = input.Split('|');
+                string account = parts[0];
+                string month = parts[1];
+
+                var statementMonth = DateTime.ParseExact("01" + month, "ddMMyy", CultureInfo.InvariantCulture);
+                var statementTransactions = transactions
+                    .Where(t => t.Account == account && t.Date.Year == statementMonth.Year && t.Date.Month == statementMonth.Month)
+                    .OrderBy(t => t.Date)
+                    .ThenBy(t => t.Id)
+                    .ToList();
+
+                if (!statementTransactions.Any())
+                {
+                    Console.WriteLine("No transactions found for the specified account and month.");
+                    continue;
+                }
+
+                // Get the balance before the first date of the requested statementTransactions month
+                decimal balance = transactions
+                .Where(t => t.Account == account && t.Date < statementTransactions.First().Date)
+                .Sum(t => t.Type == "D" ? t.Amount : -t.Amount);
+
+                // Calculate interest
+                decimal interest = CalculateInterest(account, statementMonth);
+
+                // Add interest as a transaction
+                var interestTransaction = new Transaction
+                {
+                    Id = transactions.Count + 1,
+                    Date = new DateTime(statementMonth.Year, statementMonth.Month, DateTime.DaysInMonth(statementMonth.Year, statementMonth.Month)),
+                    Account = account,
+                    Type = "I",
+                    Amount = interest
+                };
+                statementTransactions.Add(interestTransaction);
+
+                Console.WriteLine("\nAccount Statement for: " + account);
+                Console.WriteLine($"{"Date",-14}{"Txn ID",-10}{"Type",-10}{"Amount",-12}{"Balance"}");
+
+                foreach (var t in statementTransactions)
+                {
+                    // Type D: add amount to balance, Type W: deduct amount from balance, Others Type: add amount to balance
+                    balance += t.Type == "D" ? t.Amount : t.Type == "W" ? -t.Amount : t.Amount;
+                    Console.WriteLine($"{t.Date,-14:dd-MM-yyyy}{t.Id,-10}{t.Type,-10}{t.Amount,-12:F2}{balance:F2}");
+                }
+                break;
+
             }
-
-            // Get the balance before the first date of the requested statementTransactions month
-            decimal balance = transactions
-            .Where(t => t.Account == account && t.Date < statementTransactions.First().Date)
-            .Sum(t => t.Type == "D" ? t.Amount : -t.Amount);
-
-            // Calculate interest
-            decimal interest = CalculateInterest(account, statementMonth);
-
-            // Add interest as a transaction
-            var interestTransaction = new Transaction
+            catch
             {
-                Id = transactions.Count + 1,
-                Date = new DateTime(statementMonth.Year, statementMonth.Month, DateTime.DaysInMonth(statementMonth.Year, statementMonth.Month)),
-                Account = account,
-                Type = "I",
-                Amount = interest
-            };
-            statementTransactions.Add(interestTransaction);
-
-            Console.WriteLine("\nAccount Statement for: " + account);
-            Console.WriteLine($"{"Date",-14}{"Txn ID",-10}{"Type",-10}{"Amount",-12}{"Balance"}");
-
-            foreach (var t in statementTransactions)
-            {
-                // Type D: add amount to balance, Type W: deduct amount from balance, Others Type: add amount to balance
-                balance += t.Type == "D" ? t.Amount : t.Type == "W" ? -t.Amount : t.Amount;
-                Console.WriteLine($"{t.Date,-14:dd-MM-yyyy}{t.Id,-10}{t.Type,-10}{t.Amount,-12:F2}{balance:F2}");
+                Console.WriteLine("Invalid input. Please follow the format: Account|MMYY");
             }
-        }
-        catch
-        {
-            Console.WriteLine("Invalid input. Please follow the format: Account|MMYY");
         }
 
     }
