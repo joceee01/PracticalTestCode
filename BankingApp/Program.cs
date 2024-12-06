@@ -6,6 +6,7 @@ using System.Linq;
 class Program
 {
     // Data Storage
+    static List<Account> accounts = new List<Account>();
     static List<Transaction> transactions = new List<Transaction>();
     static List<InterestRateRule> interestRateRules = new List<InterestRateRule>();
 
@@ -18,7 +19,8 @@ class Program
             Console.WriteLine("1. Input Transactions");
             Console.WriteLine("2. Define Interest Rate");
             Console.WriteLine("3. Print Account Statement");
-            Console.WriteLine("4. Quit");
+            Console.WriteLine("4. Tranfer Transaction");
+            Console.WriteLine("5. Quit");
             Console.WriteLine("\nEnter Option:");
 
             string choice = Console.ReadLine();
@@ -34,6 +36,9 @@ class Program
                     PrintAccountStatement();
                     break;
                 case "4":
+                    TransferTransaction();
+                    break;
+                case "5":
                     Console.WriteLine("Exiting the application.");
                     return;
                 default:
@@ -53,9 +58,9 @@ class Program
         while (true)
         {
             Console.WriteLine("\nEnter Transaction:");
-            
+
             string input = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(input)) 
+            if (string.IsNullOrWhiteSpace(input))
                 break;
 
             try
@@ -82,8 +87,15 @@ class Program
                     continue;
                 }
 
+                if (type == "D" && amount < 0)
+                {
+                    Console.WriteLine("\nPlease enter a valid amount.");
+                    continue;
+                }
+
                 else
                 {
+                    var checkAccount = accounts.Where(a => a.AccountNo == account).FirstOrDefault();
                     // Add transaction
                     var txn = new Transaction
                     {
@@ -95,6 +107,25 @@ class Program
                     };
                     transactions.Add(txn);      // add txn into transactions list
 
+                    balance = transactions.Where(t => t.Account == account).Sum(t => t.Type == "D" ? t.Amount : -t.Amount);
+
+                    if (checkAccount == null)
+                    {
+                        // Add account
+                        var acc = new Account
+                        {
+                            AccountNo = account,
+                            Balance = balance
+                        };
+                        accounts.Add(acc);
+                    }
+
+                    else
+                    {
+                        // Update balance
+                        checkAccount.Balance = balance;
+                    }
+
                     // Sort transactions by date then by id and display for the input account
                     var accountTransactions = transactions.Where(t => t.Account == account).OrderBy(t => t.Date).ThenBy(t => t.Id);
 
@@ -105,9 +136,15 @@ class Program
                         Console.WriteLine($"{t.Date,-14:dd-MM-yyyy}{t.Id,-10}{t.Type,-10}{t.Amount,-10:F2}");
                     }
 
+                    var getAccount = accounts.Where(a => a.AccountNo == account).FirstOrDefault();
+
+                    Console.WriteLine("\nAccount Information");
+                    Console.WriteLine($"{"Account Number",-20}{"Balance"}");
+                    Console.WriteLine($"{getAccount.AccountNo,-20}{getAccount.Balance:F2}");
+
                     continue;
                 }
-                
+
             }
             catch
             {
@@ -128,7 +165,7 @@ class Program
             Console.WriteLine("\nEnter Interest Rate Rules:");
 
             string input = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(input)) 
+            if (string.IsNullOrWhiteSpace(input))
                 break;
 
             try
@@ -147,7 +184,7 @@ class Program
                     Console.WriteLine($"\nRule ID {ruleId} is not unique. Do you want to update the existing rule? (Y/N). Enter blank line to restart.");
                     Console.WriteLine($"Update existing {ruleId} (Y) or Re-enter Rule Id (N)");
 
-                    while (true) 
+                    while (true)
                     {
                         Console.WriteLine("\nEnter Y or N:");
 
@@ -293,6 +330,84 @@ class Program
         }
 
     }
+
+    static void TransferTransaction()
+    {
+        Console.WriteLine("\nFormat: Payer Account|Payee Account|Amount. Enter a blank line to finish");
+        Console.WriteLine("Payer Account: Account to transfer money from");
+        Console.WriteLine("Payee Account: Account to transfer money to");
+        Console.WriteLine("Amount: Transfer amount");
+
+        while (true)
+        {
+            Console.WriteLine("\nEnter Transfer Transaction:");
+
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input))
+                break;
+
+            try
+            {
+                // Split the input by '|' as each parts
+                var parts = input.Split('|');
+                string payerAcc = parts[0].Trim();
+                string payeeAcc = parts[1].Trim();
+                if (!decimal.TryParse(parts[2].Trim(), out decimal amount) || amount <= 0)
+                {
+                    Console.WriteLine("Invalid amount. Please enter a positive numeric value.");
+                    continue;
+                }
+
+                if (payeeAcc == payerAcc)
+                {
+                    Console.WriteLine("Cannot transfer to the same account.");
+                    continue;
+                }
+
+                var getPayerAcc = accounts.Where(a => a.AccountNo == payerAcc).FirstOrDefault();
+                var getPayeeAcc = accounts.Where(a => a.AccountNo == payeeAcc).FirstOrDefault();
+
+                if (getPayerAcc == null)
+                {
+                    Console.WriteLine($"Payer Account {payerAcc} does not exist.");
+                    continue;
+                }
+
+                if (getPayeeAcc == null)
+                {
+                    Console.WriteLine($"Payee Account {payeeAcc} does not exist.");
+                    continue;
+                }
+
+                if (getPayerAcc.Balance < amount)
+                {
+                    Console.WriteLine($"Transaction failed. Payer Account {payerAcc} has insufficient funds.");
+                    continue;
+                }
+
+                else
+                {
+                    getPayerAcc.Balance -= amount;
+                    getPayeeAcc.Balance += amount;
+
+                    var getAccount = accounts.Where(a => a.AccountNo == payerAcc || a.AccountNo == payeeAcc).ToList();
+                    Console.WriteLine("\nTransaction successful. Updated account information:");
+                    Console.WriteLine($"{"Account Number",-20}{"Balance"}");
+                    foreach (var a in getAccount)
+                    {
+                        Console.WriteLine($"{a.AccountNo,-20}{a.Balance:F2}");
+                    }
+                }
+
+            }
+            catch
+            {
+                Console.WriteLine("Invalid input. Please follow the format: Payer Account|Payee Account|Amount");
+            }
+        }
+    }
+
+
     static decimal CalculateInterest(string account, DateTime statementMonth)
     {
         var monthStart = new DateTime(statementMonth.Year, statementMonth.Month, 1);
@@ -342,6 +457,13 @@ class Program
 }
 
 // Model Classes
+class Account
+{
+    public int Id { get; set; }
+    public string AccountNo { get; set; }
+    public decimal Balance { get; set; }
+}
+
 class Transaction
 {
     public int Id { get; set; }
